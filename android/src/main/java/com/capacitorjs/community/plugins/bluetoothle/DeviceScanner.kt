@@ -10,8 +10,8 @@ import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.ArrayAdapter
+import com.getcapacitor.Logger
 
 
 class ScanResponse(
@@ -29,7 +29,7 @@ class DisplayStrings(
 
 class DeviceScanner(
     private val context: Context,
-    private val bluetoothAdapter: BluetoothAdapter,
+    bluetoothAdapter: BluetoothAdapter,
     private val scanDuration: Long?,
     private val displayStrings: DisplayStrings,
     private val showDialog: Boolean,
@@ -92,7 +92,7 @@ class DeviceScanner(
         deviceList.clear()
         if (!isScanning) {
             setTimeoutForStopScanning()
-            Log.d(TAG, "Start scanning.")
+            Logger.debug(TAG, "Start scanning.")
             isScanning = true
             bluetoothLeScanner?.startScan(scanFilters, scanSettings, scanCallback)
             if (showDialog) {
@@ -101,9 +101,7 @@ class DeviceScanner(
             } else {
                 savedCallback?.invoke(
                     ScanResponse(
-                        true,
-                        "Started scanning.",
-                        null
+                        true, "Started scanning.", null
                     )
                 )
                 savedCallback = null
@@ -112,9 +110,7 @@ class DeviceScanner(
             stopScanning()
             savedCallback?.invoke(
                 ScanResponse(
-                    false,
-                    "Already scanning. Stopping now.",
-                    null
+                    false, "Already scanning. Stopping now.", null
                 )
             )
             savedCallback = null
@@ -133,7 +129,7 @@ class DeviceScanner(
                 }
             }
         }
-        Log.d(TAG, "Stop scanning.")
+        Logger.debug(TAG, "Stop scanning.")
         isScanning = false
         bluetoothLeScanner?.stopScan(scanCallback)
     }
@@ -144,9 +140,7 @@ class DeviceScanner(
             builder.setTitle(displayStrings.scanning)
             builder.setCancelable(true)
             adapter = ArrayAdapter(
-                context,
-                android.R.layout.simple_selectable_list_item,
-                deviceStrings
+                context, android.R.layout.simple_selectable_list_item, deviceStrings
             )
             builder.setAdapter(adapter) { dialog, index ->
                 stopScanning()
@@ -160,9 +154,7 @@ class DeviceScanner(
                 dialog.cancel()
                 savedCallback?.invoke(
                     ScanResponse(
-                        false,
-                        "requestDevice cancelled.",
-                        null
+                        false, "requestDevice cancelled.", null
                     )
                 )
                 savedCallback = null
@@ -172,9 +164,7 @@ class DeviceScanner(
                 dialog.cancel()
                 savedCallback?.invoke(
                     ScanResponse(
-                        false,
-                        "requestDevice cancelled.",
-                        null
+                        false, "requestDevice cancelled.", null
                     )
                 )
                 savedCallback = null
@@ -190,8 +180,7 @@ class DeviceScanner(
             stopScanHandler?.postDelayed(
                 {
                     stopScanning()
-                },
-                scanDuration
+                }, scanDuration
             )
         }
     }

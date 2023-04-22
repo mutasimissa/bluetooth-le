@@ -2,6 +2,160 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0-1](https://github.com/capacitor-community/bluetooth-le/compare/v3.0.0-0...v3.0.0-1) (2023-04-15)
+
+## [3.0.0-0](https://github.com/capacitor-community/bluetooth-le/compare/v2.2.3...v3.0.0-0) (2023-04-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove deprecated getEnabled, use isEnabled instead
+* update plugin to Capacitor 5
+
+### Features
+
+* update plugin to Capacitor 5 ([16822ac](https://github.com/capacitor-community/bluetooth-le/commit/16822ac305416289a3423d2fe112bbcb1454339f))
+
+
+### Bug Fixes
+
+* remove deprecated getEnabled, use isEnabled instead ([8773995](https://github.com/capacitor-community/bluetooth-le/commit/8773995629ea94c9ebe45391b3bac23feab43b4d))
+* validate deviceIds argument of getDevices ([8cedd65](https://github.com/capacitor-community/bluetooth-le/commit/8cedd655b243e78e522f457182aaf6335a963062))
+
+### [2.2.3](https://github.com/capacitor-community/bluetooth-le/compare/v2.2.2...v2.2.3) (2023-04-15)
+
+
+### Bug Fixes
+
+* **android:** fix disconnecting when connect was called multiple times ([#523](https://github.com/capacitor-community/bluetooth-le/issues/523)) ([3a8595b](https://github.com/capacitor-community/bluetooth-le/commit/3a8595b7f10fc8a3866d5c7915f902c85015552d))
+
+### [2.2.2](https://github.com/capacitor-community/bluetooth-le/compare/v2.2.1...v2.2.2) (2023-04-15)
+
+
+### Bug Fixes
+
+* **deps:** remove throat dependency ([#521](https://github.com/capacitor-community/bluetooth-le/issues/521)) ([565dc59](https://github.com/capacitor-community/bluetooth-le/commit/565dc59c5d64bdbca1cd22caf6bc0500179904db))
+
+### [2.2.1](https://github.com/capacitor-community/bluetooth-le/compare/v2.2.0...v2.2.1) (2023-04-08)
+
+
+### Bug Fixes
+
+* **ios:** fix conversion of descriptor value ([1881b9d](https://github.com/capacitor-community/bluetooth-le/commit/1881b9defae9e15026562c005fb936d3eca9d427))
+* **ios:** fix getDevices and getConnectedDevices to not stop existing notifications ([565ce8c](https://github.com/capacitor-community/bluetooth-le/commit/565ce8cd050afcd5c41ab29a6f71043401ae4408))
+* **web:** filter getDevices result according to deviceIds parameter ([652f33f](https://github.com/capacitor-community/bluetooth-le/commit/652f33f00a8adeb4099ee0f9dd163dc913072af4))
+
+## [2.2.0](https://github.com/capacitor-community/bluetooth-le/compare/v2.1.0...v2.2.0) (2023-04-02)
+
+
+### Features
+
+* **android, ios:** add getMtu ([6740561](https://github.com/capacitor-community/bluetooth-le/commit/6740561868eb14ae0a32ad15fbd2dbab0465051e))
+* **android:** add requestConnectionPriority ([9e4a08e](https://github.com/capacitor-community/bluetooth-le/commit/9e4a08e80edc81c819c2b4c6b02a5594622aee80))
+
+
+### Bug Fixes
+
+* **android:** fix requestDevice and requestLEScan when BLE adaptor is off in some Android devices ([d1739f5](https://github.com/capacitor-community/bluetooth-le/commit/d1739f5b26f422530fbad71f575c6312783fa30e))
+* validate services argument in getConnectedDevices function ([98f663d](https://github.com/capacitor-community/bluetooth-le/commit/98f663d702d92ba7c3625d96acb5a38289a15fb3))
+
+## [2.1.0](https://github.com/capacitor-community/bluetooth-le/compare/v2.0.1...v2.1.0) (2023-01-02)
+
+
+### Features
+
+* add discoverServices method ([0239f3d](https://github.com/capacitor-community/bluetooth-le/commit/0239f3d82eb4fa7a375c5f02042e6417bddbbc70))
+
+
+### Bug Fixes
+
+* refactor Android logging ([321a823](https://github.com/capacitor-community/bluetooth-le/commit/321a823cc018fef4ead3845732e329d4b7202981))
+* refactor iOS logging ([e215836](https://github.com/capacitor-community/bluetooth-le/commit/e2158367960fd84ed142de60ea4ae04f32f06999))
+* logging now respects `loggingBehavior` from Capacitor config
+* validate service UUIDs in requestDevice and requestLEScan calls ([ad10fe8](https://github.com/capacitor-community/bluetooth-le/commit/ad10fe81507b32229440bc206c38f7b227cb6efb))
+
+### [2.0.1](https://github.com/capacitor-community/bluetooth-le/compare/v2.0.0...v2.0.1) (2022-10-09)
+
+
+### Bug Fixes
+
+* **android:** handle immediate enable/disable problems ([a48082d](https://github.com/capacitor-community/bluetooth-le/commit/a48082dd8905f9276bd6ad45e9eefbab03c8da70))
+
+## [2.0.0](https://github.com/capacitor-community/bluetooth-le/compare/v2.0.0-0...v2.0.0) (2022-08-07)
+
+## [2.0.0-0](https://github.com/capacitor-community/bluetooth-le/compare/v1.8.3...v2.0.0-0) (2022-07-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* update plugin to Capacitor 4
+
+### Features
+
+* update plugin to Capacitor 4 ([88f038a](https://github.com/capacitor-community/bluetooth-le/commit/88f038aeed526c860cfb40e9a4cb9562c25d931b))
+
+### [1.8.3](https://github.com/capacitor-community/bluetooth-le/compare/v1.8.2...v1.8.3) (2022-07-17)
+
+
+### Bug Fixes
+
+* allow reading and writing empty values ([749bb46](https://github.com/capacitor-community/bluetooth-le/commit/749bb467561455ff38c09cc3915163335498f55c))
+* fix conversion of empty hex string ([28f4f69](https://github.com/capacitor-community/bluetooth-le/commit/28f4f69c602f08ff216772170b42af3d0a04aa9f))
+
+### [1.8.2](https://github.com/capacitor-community/bluetooth-le/compare/v1.8.1...v1.8.2) (2022-05-01)
+
+
+### Bug Fixes
+
+* **android:** close bluetooth gatt in case of connection timeout ([961d8a2](https://github.com/capacitor-community/bluetooth-le/commit/961d8a28b5d59a19706b74b5117c8b107107759a))
+
+### [1.8.1](https://github.com/capacitor-community/bluetooth-le/compare/v1.8.0...v1.8.1) (2022-04-15)
+
+
+### Bug Fixes
+
+* **android:** fix crash stopScanning with BLE adapter off [#317](https://github.com/capacitor-community/bluetooth-le/issues/317) ([#318](https://github.com/capacitor-community/bluetooth-le/issues/318)) ([07dbd45](https://github.com/capacitor-community/bluetooth-le/commit/07dbd4556d9e10bbb7375e7f7325fbb4a96edf34))
+
+## [1.8.0](https://github.com/capacitor-community/bluetooth-le/compare/v1.7.0...v1.8.0) (2022-02-27)
+
+
+### Features
+
+* **android:** add support for Android 12 permissions ([#274](https://github.com/capacitor-community/bluetooth-le/issues/274)) ([9d38682](https://github.com/capacitor-community/bluetooth-le/commit/9d386824dde957fc983beeedad6e033bde539c49))  (see [Readme](https://github.com/capacitor-community/bluetooth-le#optional-android-12-bluetooth-permissions))
+
+## [1.7.0](https://github.com/capacitor-community/bluetooth-le/compare/v1.6.1...v1.7.0) (2022-01-22)
+
+
+### Features
+
+* make timeouts configurable ([#279](https://github.com/capacitor-community/bluetooth-le/issues/279)) ([a095fb3](https://github.com/capacitor-community/bluetooth-le/commit/a095fb3d3df5b04d79e3fd53e918d9f76f30396b))
+
+
+### Bug Fixes
+
+* inline source code in esm map files of plugin ([8ffb1ff](https://github.com/capacitor-community/bluetooth-le/commit/8ffb1ffeefabae3606a624435a870158570f6a43))
+
+### [1.6.1](https://github.com/capacitor-community/bluetooth-le/compare/v1.6.0...v1.6.1) (2022-01-02)
+
+
+### Bug Fixes
+
+* fix `numberToUUID` for values with leading zeroes ([#261](https://github.com/capacitor-community/bluetooth-le/issues/261)) ([b335dcc](https://github.com/capacitor-community/bluetooth-le/commit/b335dccb37f03667c00366a177050060f3a6ecf8))
+
+## [1.6.0](https://github.com/capacitor-community/bluetooth-le/compare/v1.5.0...v1.6.0) (2021-11-14)
+
+
+### Features
+
+* **all:** add methods to read/write descriptors ([#236](https://github.com/capacitor-community/bluetooth-le/issues/236)) ([ea9dae3](https://github.com/capacitor-community/bluetooth-le/commit/ea9dae32e23a24900a0e5cd0f52d5994fb27a3fb))
+* **all:** make connect timeout configurable ([#242](https://github.com/capacitor-community/bluetooth-le/issues/242)) ([2364c39](https://github.com/capacitor-community/bluetooth-le/commit/2364c39580c864fab17211b16289726f214360eb))
+* **android:** implement openAppSettings for android ([#241](https://github.com/capacitor-community/bluetooth-le/issues/241)) ([29abb16](https://github.com/capacitor-community/bluetooth-le/commit/29abb1618b71ae52dca92fd6d87a9d1f8f7b7af8))
+
+
+### Bug Fixes
+
+* **ios:** fix conversion of CBUUID of length 8 ([c02e3f7](https://github.com/capacitor-community/bluetooth-le/commit/c02e3f75945c41c90a90addbb8c83c191aa2504b))
+
 ## [1.5.0](https://github.com/capacitor-community/bluetooth-le/compare/v1.4.0...v1.5.0) (2021-10-02)
 
 

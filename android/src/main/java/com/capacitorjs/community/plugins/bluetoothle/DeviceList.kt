@@ -1,7 +1,6 @@
 package com.capacitorjs.community.plugins.bluetoothle
 
 import android.bluetooth.BluetoothDevice
-import java.util.*
 
 class DeviceList {
     private val devices: ArrayList<BluetoothDevice> = ArrayList()
@@ -11,9 +10,8 @@ class DeviceList {
         if (!devices.contains(device)) {
             devices.add(device)
             return true
-        } else {
-            return false
         }
+        return false
     }
 
     fun getDevice(index: Int): BluetoothDevice {

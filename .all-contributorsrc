@@ -12,7 +12,8 @@
       "avatar_url": "https://avatars2.githubusercontent.com/u/24232962?v=4",
       "profile": "https://github.com/pwespi",
       "contributions": [
-        "code"
+        "code",
+        "doc"
       ]
     },
     {
@@ -39,6 +40,51 @@
       "name": "Kasymbekov Sultanmyrza",
       "avatar_url": "https://avatars.githubusercontent.com/u/12681781?v=4",
       "profile": "https://github.com/sultanmyrza",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mutasimissa",
+      "name": "Mutasim Issa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9040320?v=4",
+      "profile": "https://sourcya.com",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "trik",
+      "name": "Marco Marche",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1615301?v=4",
+      "profile": "http://www.gnucoop.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "JFKakaJFK",
+      "name": "Johannes Koch",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13108477?v=4",
+      "profile": "https://github.com/JFKakaJFK",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "jrobeson",
+      "name": "Johnny Robeson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/56908?v=4",
+      "profile": "https://github.com/jrobeson",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "aadito123",
+      "name": "Aadit Olkar",
+      "avatar_url": "https://avatars.githubusercontent.com/u/63646058?v=4",
+      "profile": "https://github.com/aadito123",
       "contributions": [
         "code"
       ]

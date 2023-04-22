@@ -2,6 +2,18 @@ import type { PluginListenerHandle } from '@capacitor/core';
 
 import type { DisplayStrings } from './config';
 
+export interface InitializeOptions {
+  /**
+   * If your app doesn't use Bluetooth scan results to derive physical
+   * location information, you can strongly assert that your app
+   * doesn't derive physical location. (Android only)
+   * Requires adding 'neverForLocation' to AndroidManifest.xml
+   * https://developer.android.com/guide/topics/connectivity/bluetooth/permissions#assert-never-for-location
+   * @default false
+   */
+  androidNeverForLocation?: boolean;
+}
+
 export interface RequestBleDeviceOptions {
   /**
    * Filter devices by service UUIDs.
@@ -57,6 +69,27 @@ export enum ScanMode {
   SCAN_MODE_LOW_LATENCY = 2,
 }
 
+/**
+ * Android connection priority used in `requestConnectionPriority`
+ */
+export enum ConnectionPriority {
+  /**
+   * Use the connection parameters recommended by the Bluetooth SIG. This is the default value if no connection parameter update is requested.
+   * https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED
+   */
+  CONNECTION_PRIORITY_BALANCED = 0,
+  /**
+   * Request a high priority, low latency connection. An application should only request high priority connection parameters to transfer large amounts of data over LE quickly. Once the transfer is complete, the application should request CONNECTION_PRIORITY_BALANCED connection parameters to reduce energy use.
+   * https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH
+   */
+  CONNECTION_PRIORITY_HIGH = 1,
+  /**
+   * Request low power, reduced data rate connection parameters.
+   * https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER
+   */
+  CONNECTION_PRIORITY_LOW_POWER = 2,
+}
+
 export interface BleDevice {
   /**
    * ID of the device, which will be needed for further calls.
@@ -74,6 +107,17 @@ export interface BleDevice {
 export interface DeviceIdOptions {
   deviceId: string;
 }
+export interface TimeoutOptions {
+  /**
+   * Timeout in milliseconds for plugin call.
+   * Default is 10000 for `connect` and 5000 for other plugin methods.
+   */
+  timeout?: number;
+}
+
+export interface RequestConnectionPriorityOptions extends DeviceIdOptions {
+  connectionPriority: ConnectionPriority;
+}
 
 export interface GetDevicesOptions {
   deviceIds: string[];
@@ -88,9 +132,14 @@ export interface BleService {
   readonly characteristics: BleCharacteristic[];
 }
 
+export interface BleDescriptor {
+  readonly uuid: string;
+}
+
 export interface BleCharacteristic {
   readonly uuid: string;
   readonly properties: BleCharacteristicProperties;
+  readonly descriptors: BleDescriptor[];
 }
 
 export interface BleCharacteristicProperties {
@@ -118,6 +167,13 @@ export interface ReadOptions {
   characteristic: string;
 }
 
+export interface ReadDescriptorOptions {
+  deviceId: string;
+  service: string;
+  characteristic: string;
+  descriptor: string;
+}
+
 export type Data = DataView | string;
 
 export interface WriteOptions {
@@ -131,12 +187,28 @@ export interface WriteOptions {
   value: Data;
 }
 
+export interface WriteDescriptorOptions {
+  deviceId: string;
+  service: string;
+  characteristic: string;
+  descriptor: string;
+  /**
+   * android, ios: string
+   * web: DataView
+   */
+  value: Data;
+}
+
 export interface BooleanResult {
   value: boolean;
 }
 
 export interface GetDevicesResult {
   devices: BleDevice[];
+}
+
+export interface GetMtuResult {
+  value: number;
 }
 
 export interface ReadRssiResult {
@@ -200,7 +272,7 @@ export interface ScanResult {
 }
 
 export interface BluetoothLePlugin {
-  initialize(): Promise<void>;
+  initialize(options?: InitializeOptions): Promise<void>;
   isEnabled(): Promise<BooleanResult>;
   enable(): Promise<void>;
   disable(): Promise<void>;
@@ -219,15 +291,20 @@ export interface BluetoothLePlugin {
   addListener(eventName: 'onEnabledChanged', listenerFunc: (result: BooleanResult) => void): PluginListenerHandle;
   addListener(eventName: string, listenerFunc: (event: ReadResult) => void): PluginListenerHandle;
   addListener(eventName: 'onScanResult', listenerFunc: (result: ScanResultInternal) => void): PluginListenerHandle;
-  connect(options: DeviceIdOptions): Promise<void>;
+  connect(options: DeviceIdOptions & TimeoutOptions): Promise<void>;
   createBond(options: DeviceIdOptions): Promise<void>;
   isBonded(options: DeviceIdOptions): Promise<BooleanResult>;
   disconnect(options: DeviceIdOptions): Promise<void>;
   getServices(options: DeviceIdOptions): Promise<BleServices>;
+  discoverServices(options: DeviceIdOptions): Promise<void>;
+  getMtu(options: DeviceIdOptions): Promise<GetMtuResult>;
+  requestConnectionPriority(options: RequestConnectionPriorityOptions): Promise<void>;
   readRssi(options: DeviceIdOptions): Promise<ReadRssiResult>;
-  read(options: ReadOptions): Promise<ReadResult>;
-  write(options: WriteOptions): Promise<void>;
-  writeWithoutResponse(options: WriteOptions): Promise<void>;
+  read(options: ReadOptions & TimeoutOptions): Promise<ReadResult>;
+  write(options: WriteOptions & TimeoutOptions): Promise<void>;
+  writeWithoutResponse(options: WriteOptions & TimeoutOptions): Promise<void>;
+  readDescriptor(options: ReadDescriptorOptions & TimeoutOptions): Promise<ReadResult>;
+  writeDescriptor(options: WriteDescriptorOptions & TimeoutOptions): Promise<void>;
   startNotifications(options: ReadOptions): Promise<void>;
   stopNotifications(options: ReadOptions): Promise<void>;
 }

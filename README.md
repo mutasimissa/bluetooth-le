@@ -6,14 +6,14 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2021?style=flat-square" />
-  <a href="https://github.com/capacitor-community/bluetooth-le/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/workflow/status/capacitor-community/bluetooth-le/CI?style=flat-square" /></a>
+  <img src="https://img.shields.io/maintenance/yes/2023?style=flat-square" />
+  <a href="https://github.com/capacitor-community/bluetooth-le/actions?query=workflow%3A%22CI%22"><img src="https://img.shields.io/github/actions/workflow/status/capacitor-community/bluetooth-le/main.yml?branch=main&style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/bluetooth-le"><img src="https://img.shields.io/npm/l/@capacitor-community/bluetooth-le?style=flat-square" /></a>
 <br>
   <a href="https://www.npmjs.com/package/@capacitor-community/bluetooth-le"><img src="https://img.shields.io/npm/dw/@capacitor-community/bluetooth-le?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/bluetooth-le"><img src="https://img.shields.io/npm/v/@capacitor-community/bluetooth-le?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-4-orange?style=flat-square" /></a>
+<a href="#contributors-"><img src="https://img.shields.io/badge/all%20contributors-9-orange?style=flat-square" /></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -27,7 +27,9 @@
 
 | Plugin | Capacitor | Documentation                                                                     |
 | ------ | --------- | --------------------------------------------------------------------------------- |
-| 1.x    | 3.x       | [README](https://github.com/capacitor-community/bluetooth-le/blob/main/README.md) |
+| 3.x    | 5.x       | [README](https://github.com/capacitor-community/bluetooth-le/blob/main/README.md) |
+| 2.x    | 4.x       | [README](https://github.com/capacitor-community/bluetooth-le/blob/2.x/README.md)  |
+| 1.x    | 3.x       | [README](https://github.com/capacitor-community/bluetooth-le/blob/1.x/README.md)  |
 | 0.x    | 2.x       | [README](https://github.com/capacitor-community/bluetooth-le/blob/0.x/README.md)  |
 
 ## Introduction
@@ -36,13 +38,18 @@ This is a Capacitor plugin for Bluetooth Low Energy. It supports the web, Androi
 
 The goal is to support the same features on all platforms. Therefore the [Web Bluetooth API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API) is taken as a guidline for what features to implement.
 
+This plugin only supports the central role of the Bluetooth Low Energy protocol. If you need the peripheral role, take a look a these plugins:
+
+- https://github.com/randdusing/cordova-plugin-bluetoothle
+- https://github.com/don/cordova-plugin-ble-peripheral
+
 For support of Web Bluetooth in various browsers, see [implementation status](https://github.com/WebBluetoothCG/web-bluetooth/blob/main/implementation-status.md).
 
 Below is an index of all the methods available.
 
 <docgen-index>
 
-- [`initialize()`](#initialize)
+- [`initialize(...)`](#initialize)
 - [`isEnabled()`](#isenabled)
 - [`enable()`](#enable)
 - [`disable()`](#disable)
@@ -63,10 +70,15 @@ Below is an index of all the methods available.
 - [`isBonded(...)`](#isbonded)
 - [`disconnect(...)`](#disconnect)
 - [`getServices(...)`](#getservices)
+- [`discoverServices(...)`](#discoverservices)
+- [`getMtu(...)`](#getmtu)
+- [`requestConnectionPriority(...)`](#requestconnectionpriority)
 - [`readRssi(...)`](#readrssi)
 - [`read(...)`](#read)
 - [`write(...)`](#write)
 - [`writeWithoutResponse(...)`](#writewithoutresponse)
+- [`readDescriptor(...)`](#readdescriptor)
+- [`writeDescriptor(...)`](#writedescriptor)
 - [`startNotifications(...)`](#startnotifications)
 - [`stopNotifications(...)`](#stopnotifications)
 - [Interfaces](#interfaces)
@@ -113,6 +125,32 @@ If the app needs to use Bluetooth while it is in the background, you also have t
 ### Android
 
 On Android, no further steps are required to use the plugin (if you are using Capacitor 2, see [here](https://github.com/capacitor-community/bluetooth-le/blob/0.x/README.md#android)).
+
+#### (Optional) Android 12 Bluetooth permissions
+
+If your app targets Android 12 (API level 31) or higher and your app doesn't use Bluetooth scan results to derive physical location information, you can strongly assert that your app doesn't derive physical location. This allows the app to scan for Bluetooth devices without asking for location permissions. See the [Android documentation](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions#declare-android12-or-higher).
+
+The following steps are required to scan for Bluetooth devices without location permission on Android 12 devices:
+
+- In `android/variables.gradle`, make sure `compileSdkVersion` and `targetSdkVersion` are at least 31 (changing those values can have other consequences on your app, so make sure you know what you're doing).
+- Make sure you have JDK 11+ (it is recommended to use JDK that comes with Android Studio).
+- In `android/app/src/main/AndroidManifest.xml`, add `android:exported="true"` to your activity if not already added (setting [`android:exported`](https://developer.android.com/guide/topics/manifest/activity-element#exported) is required in apps targeting Android 12 and higher).
+- In `android/app/src/main/AndroidManifest.xml`, update the permissions:
+  ```diff
+      <!-- Permissions -->
+  +   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="30" />
+  +   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+  +   <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+  +     android:usesPermissionFlags="neverForLocation"
+  +     tools:targetApi="s" />
+  ```
+- Set the `androidNeverForLocation` flag to `true` when initializing the `BleClient`.
+  ```ts
+  import { BleClient } from '@capacitor-community/bluetooth-le';
+  await BleClient.initialize({ androidNeverForLocation: true });
+  ```
+
+> [_Note_: If you include neverForLocation in your android:usesPermissionFlags, some BLE beacons are filtered from the scan results.](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions#assert-never-for-location)
 
 ## Configuration
 
@@ -189,7 +227,8 @@ export async function main(): Promise<void> {
       optionalServices: [BATTERY_SERVICE, POLAR_PMD_SERVICE],
     });
 
-    await BleClient.connect(device.deviceId);
+    // connect to device, the onDisconnect callback is optional
+    await BleClient.connect(device.deviceId, (deviceId) => onDisconnect(deviceId));
     console.log('connected to device', device);
 
     const result = await BleClient.read(device.deviceId, HEART_RATE_SERVICE, BODY_SENSOR_LOCATION_CHARACTERISTIC);
@@ -210,6 +249,7 @@ export async function main(): Promise<void> {
       }
     );
 
+    // disconnect after 10 sec
     setTimeout(async () => {
       await BleClient.stopNotifications(device.deviceId, HEART_RATE_SERVICE, HEART_RATE_MEASUREMENT_CHARACTERISTIC);
       await BleClient.disconnect(device.deviceId);
@@ -218,6 +258,10 @@ export async function main(): Promise<void> {
   } catch (error) {
     console.error(error);
   }
+}
+
+function onDisconnect(deviceId: string): void {
+  console.log(`device ${deviceId} disconnected`);
 }
 
 function parseHeartRate(value: DataView): number {
@@ -265,6 +309,12 @@ export async function scan(): Promise<void> {
 ## Usage (Ionic/React)
 - [BLE Tester](https://github.com/sourcya/ble-tester)
 
+## Example Applications
+
+- [BLE Tester](https://github.com/sourcya/ble-tester) (Ionic/React)
+- [OpenGoPro](https://github.com/gopro/OpenGoPro/tree/main/demos/ionic/file_transfer) (Ionic/Angular)
+- [Quasar BLE](https://github.com/nunogois/quasar-ble) (Quasar/Vue)
+
 ## Platform Support
 
 _Note_: web support depends on the browser, see [implementation status](https://github.com/WebBluetoothCG/web-bluetooth/blob/main/implementation-status.md).
@@ -280,7 +330,7 @@ _Note_: web support depends on the browser, see [implementation status](https://
 | [`isLocationEnabled()`](#islocationenabled)                    |   ✅    | ❌  | ❌  |
 | [`openLocationSettings()`](#openlocationsettings)              |   ✅    | ❌  | ❌  |
 | [`openBluetoothSettings()`](#openbluetoothsettings)            |   ✅    | ❌  | ❌  |
-| [`openAppSettings()`](#openappsettings)                        |   ❌    | ✅  | ❌  |
+| [`openAppSettings()`](#openappsettings)                        |   ✅    | ✅  | ❌  |
 | [`setDisplayStrings(...)`](#setdisplaystrings)                 |   ✅    | ✅  | --  |
 | [`requestDevice(...)`](#requestdevice)                         |   ✅    | ✅  | ✅  |
 | [`requestLEScan(...)`](#requestlescan)                         |   ✅    | ✅  | 🚩  |
@@ -292,9 +342,14 @@ _Note_: web support depends on the browser, see [implementation status](https://
 | [`isBonded(...)`](#isbonded)                                   |   ✅    | ❌  | ❌  |
 | [`disconnect(...)`](#disconnect)                               |   ✅    | ✅  | ✅  |
 | [`getServices(...)`](#getservices)                             |   ✅    | ✅  | ✅  |
+| [`discoverServices(...)`](#discoverservices)                   |   ✅    | ✅  | ❌  |
+| [`getMtu(...)`](#getmtu)                                       |   ✅    | ✅  | ❌  |
+| [`requestConnectionPriority(...)`](#requestconnectionpriority) |   ✅    | ❌  | ❌  |
 | [`readRssi(...)`](#readrssi)                                   |   ✅    | ✅  | ❌  |
 | [`read(...)`](#read)                                           |   ✅    | ✅  | ✅  |
 | [`write(...)`](#write)                                         |   ✅    | ✅  | ✅  |
+| [`readDescriptor(...)`](#read)                                 |   ✅    | ✅  | ✅  |
+| [`writeDescriptor(...)`](#write)                               |   ✅    | ✅  | ✅  |
 | [`writeWithoutResponse(...)`](#writewithoutresponse)           |   ✅    | ✅  | ✅  |
 | [`startNotifications(...)`](#startnotifications)               |   ✅    | ✅  | ✅  |
 | [`stopNotifications(...)`](#stopnotifications)                 |   ✅    | ✅  | ✅  |
@@ -311,15 +366,19 @@ _Note_: web support depends on the browser, see [implementation status](https://
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### initialize()
+### initialize(...)
 
 ```typescript
-initialize() => Promise<void>
+initialize(options?: InitializeOptions | undefined) => Promise<void>
 ```
 
 Initialize Bluetooth Low Energy (BLE). If it fails, BLE might be unavailable on this device.
 On **Android** it will ask for the location permission. On **iOS** it will ask for the Bluetooth permission.
 For an example, see [usage](#usage).
+
+| Param         | Type                                                            |
+| ------------- | --------------------------------------------------------------- |
+| **`options`** | <code><a href="#initializeoptions">InitializeOptions</a></code> |
 
 ---
 
@@ -425,10 +484,10 @@ openAppSettings() => Promise<void>
 ```
 
 Open App settings.
-Only available on **iOS**.
+Not available on **web**.
 On **iOS** when a user declines the request to use Bluetooth on the first call of `initialize`, it is not possible
 to request for Bluetooth again from within the app. In this case Bluetooth has to be enabled in the app settings
-for the app to use it.
+for the app to be able use it.
 
 ---
 
@@ -501,9 +560,9 @@ Uses [retrievePeripherals](https://developer.apple.com/documentation/corebluetoo
 [getDevices](https://developer.mozilla.org/en-US/docs/Web/API/Bluetooth/getDevices) on web.
 On Android, you can directly connect to the device with the deviceId.
 
-| Param           | Type                  | Description                                                             |
-| --------------- | --------------------- | ----------------------------------------------------------------------- |
-| **`deviceIds`** | <code>string[]</code> | List of device IDs, e.g. saved from a previous app run. No used on web. |
+| Param           | Type                  | Description                                             |
+| --------------- | --------------------- | ------------------------------------------------------- |
+| **`deviceIds`** | <code>string[]</code> | List of device IDs, e.g. saved from a previous app run. |
 
 **Returns:** <code>Promise&lt;BleDevice[]&gt;</code>
 
@@ -531,15 +590,16 @@ and [getDevices](https://developer.mozilla.org/en-US/docs/Web/API/Bluetooth/getD
 ### connect(...)
 
 ```typescript
-connect(deviceId: string, onDisconnect?: ((deviceId: string) => void) | undefined) => Promise<void>
+connect(deviceId: string, onDisconnect?: ((deviceId: string) => void) | undefined, options?: TimeoutOptions | undefined) => Promise<void>
 ```
 
 Connect to a peripheral BLE device. For an example, see [usage](#usage).
 
-| Param              | Type                                         | Description                                                                                                    |
-| ------------------ | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **`deviceId`**     | <code>string</code>                          | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
-| **`onDisconnect`** | <code>((deviceId: string) =&gt; void)</code> | Optional disconnect callback function that will be used when the device disconnects                            |
+| Param              | Type                                                      | Description                                                                                                    |
+| ------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`**     | <code>string</code>                                       | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
+| **`onDisconnect`** | <code>((deviceId: string) =&gt; void)</code>              | Optional disconnect callback function that will be used when the device disconnects                            |
+| **`options`**      | <code><a href="#timeoutoptions">TimeoutOptions</a></code> | Options for plugin call                                                                                        |
 
 ---
 
@@ -550,7 +610,7 @@ createBond(deviceId: string) => Promise<void>
 ```
 
 Create a bond with a peripheral BLE device.
-Only available on Android.
+Only available on **Android**. On iOS bonding is handled by the OS.
 
 | Param          | Type                | Description                                                                                                    |
 | -------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -565,7 +625,7 @@ isBonded(deviceId: string) => Promise<boolean>
 ```
 
 Report whether a peripheral BLE device is bonded.
-Only available on Android.
+Only available on **Android**. On iOS bonding is handled by the OS.
 
 | Param          | Type                | Description                                                                                                    |
 | -------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -595,13 +655,63 @@ Disconnect from a peripheral BLE device. For an example, see [usage](#usage).
 getServices(deviceId: string) => Promise<BleService[]>
 ```
 
-Get services and characteristics of device.
+Get services, characteristics and descriptors of a device.
 
 | Param          | Type                | Description                                                                                                    |
 | -------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
 | **`deviceId`** | <code>string</code> | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
 
 **Returns:** <code>Promise&lt;BleService[]&gt;</code>
+
+---
+
+### discoverServices(...)
+
+```typescript
+discoverServices(deviceId: string) => Promise<void>
+```
+
+Discover services, characteristics and descriptors of a device.
+You only need this method if your peripheral device changes its services and characteristics at runtime.
+If the discovery was successful, the remote services can be retrieved using the getServices function.
+Not available on **web**.
+
+| Param          | Type                | Description                                                                                                    |
+| -------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`** | <code>string</code> | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
+
+---
+
+### getMtu(...)
+
+```typescript
+getMtu(deviceId: string) => Promise<number>
+```
+
+Get the MTU of a connected device. Note that the maximum write value length is 3 bytes less than the MTU.
+Not available on **web**.
+
+| Param          | Type                | Description                                                                                                    |
+| -------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`** | <code>string</code> | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
+
+**Returns:** <code>Promise&lt;number&gt;</code>
+
+---
+
+### requestConnectionPriority(...)
+
+```typescript
+requestConnectionPriority(deviceId: string, connectionPriority: ConnectionPriority) => Promise<void>
+```
+
+Request a connection parameter update.
+Only available on **Android**. https://developer.android.com/reference/android/bluetooth/BluetoothGatt#requestConnectionPriority(int)
+
+| Param                    | Type                                                              | Description                                                                                                    |
+| ------------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`**           | <code>string</code>                                               | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
+| **`connectionPriority`** | <code><a href="#connectionpriority">ConnectionPriority</a></code> | Request a specific connection priority. See [ConnectionPriority](#connectionpriority)                          |
 
 ---
 
@@ -612,7 +722,7 @@ readRssi(deviceId: string) => Promise<number>
 ```
 
 Read the RSSI value of a connected device.
-Not available on web.
+Not available on **web**.
 
 | Param          | Type                | Description                                                                                                    |
 | -------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -625,16 +735,17 @@ Not available on web.
 ### read(...)
 
 ```typescript
-read(deviceId: string, service: string, characteristic: string) => Promise<DataView>
+read(deviceId: string, service: string, characteristic: string, options?: TimeoutOptions | undefined) => Promise<DataView>
 ```
 
 Read the value of a characteristic. For an example, see [usage](#usage).
 
-| Param                | Type                | Description                                                                                                    |
-| -------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **`deviceId`**       | <code>string</code> | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
-| **`service`**        | <code>string</code> | UUID of the service (see [UUID format](#uuid-format))                                                          |
-| **`characteristic`** | <code>string</code> | UUID of the characteristic (see [UUID format](#uuid-format))                                                   |
+| Param                | Type                                                      | Description                                                                                                    |
+| -------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`**       | <code>string</code>                                       | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
+| **`service`**        | <code>string</code>                                       | UUID of the service (see [UUID format](#uuid-format))                                                          |
+| **`characteristic`** | <code>string</code>                                       | UUID of the characteristic (see [UUID format](#uuid-format))                                                   |
+| **`options`**        | <code><a href="#timeoutoptions">TimeoutOptions</a></code> | Options for plugin call                                                                                        |
 
 **Returns:** <code>Promise&lt;<a href="#dataview">DataView</a>&gt;</code>
 
@@ -643,34 +754,75 @@ Read the value of a characteristic. For an example, see [usage](#usage).
 ### write(...)
 
 ```typescript
-write(deviceId: string, service: string, characteristic: string, value: DataView) => Promise<void>
+write(deviceId: string, service: string, characteristic: string, value: DataView, options?: TimeoutOptions | undefined) => Promise<void>
 ```
 
 Write a value to a characteristic. For an example, see [usage](#usage).
 
-| Param                | Type                                          | Description                                                                                                                                                                                 |
-| -------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`deviceId`**       | <code>string</code>                           | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan))                                                                              |
-| **`service`**        | <code>string</code>                           | UUID of the service (see [UUID format](#uuid-format))                                                                                                                                       |
-| **`characteristic`** | <code>string</code>                           | UUID of the characteristic (see [UUID format](#uuid-format))                                                                                                                                |
-| **`value`**          | <code><a href="#dataview">DataView</a></code> | The value to write as a <a href="#dataview">DataView</a>. To create a <a href="#dataview">DataView</a> from an array of numbers, there is a helper function, e.g. numbersToDataView([1, 0]) |
+| Param                | Type                                                      | Description                                                                                                                                                                                 |
+| -------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`**       | <code>string</code>                                       | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan))                                                                              |
+| **`service`**        | <code>string</code>                                       | UUID of the service (see [UUID format](#uuid-format))                                                                                                                                       |
+| **`characteristic`** | <code>string</code>                                       | UUID of the characteristic (see [UUID format](#uuid-format))                                                                                                                                |
+| **`value`**          | <code><a href="#dataview">DataView</a></code>             | The value to write as a <a href="#dataview">DataView</a>. To create a <a href="#dataview">DataView</a> from an array of numbers, there is a helper function, e.g. numbersToDataView([1, 0]) |
+| **`options`**        | <code><a href="#timeoutoptions">TimeoutOptions</a></code> | Options for plugin call                                                                                                                                                                     |
 
 ---
 
 ### writeWithoutResponse(...)
 
 ```typescript
-writeWithoutResponse(deviceId: string, service: string, characteristic: string, value: DataView) => Promise<void>
+writeWithoutResponse(deviceId: string, service: string, characteristic: string, value: DataView, options?: TimeoutOptions | undefined) => Promise<void>
 ```
 
 Write a value to a characteristic without waiting for a response.
 
-| Param                | Type                                          | Description                                                                                                                                                                                 |
-| -------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`deviceId`**       | <code>string</code>                           | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan))                                                                              |
-| **`service`**        | <code>string</code>                           | UUID of the service (see [UUID format](#uuid-format))                                                                                                                                       |
-| **`characteristic`** | <code>string</code>                           | UUID of the characteristic (see [UUID format](#uuid-format))                                                                                                                                |
-| **`value`**          | <code><a href="#dataview">DataView</a></code> | The value to write as a <a href="#dataview">DataView</a>. To create a <a href="#dataview">DataView</a> from an array of numbers, there is a helper function, e.g. numbersToDataView([1, 0]) |
+| Param                | Type                                                      | Description                                                                                                                                                                                 |
+| -------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`**       | <code>string</code>                                       | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan))                                                                              |
+| **`service`**        | <code>string</code>                                       | UUID of the service (see [UUID format](#uuid-format))                                                                                                                                       |
+| **`characteristic`** | <code>string</code>                                       | UUID of the characteristic (see [UUID format](#uuid-format))                                                                                                                                |
+| **`value`**          | <code><a href="#dataview">DataView</a></code>             | The value to write as a <a href="#dataview">DataView</a>. To create a <a href="#dataview">DataView</a> from an array of numbers, there is a helper function, e.g. numbersToDataView([1, 0]) |
+| **`options`**        | <code><a href="#timeoutoptions">TimeoutOptions</a></code> | Options for plugin call                                                                                                                                                                     |
+
+---
+
+### readDescriptor(...)
+
+```typescript
+readDescriptor(deviceId: string, service: string, characteristic: string, descriptor: string, options?: TimeoutOptions | undefined) => Promise<DataView>
+```
+
+Read the value of a descriptor.
+
+| Param                | Type                                                      | Description                                                                                                    |
+| -------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`**       | <code>string</code>                                       | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan)) |
+| **`service`**        | <code>string</code>                                       | UUID of the service (see [UUID format](#uuid-format))                                                          |
+| **`characteristic`** | <code>string</code>                                       | UUID of the characteristic (see [UUID format](#uuid-format))                                                   |
+| **`descriptor`**     | <code>string</code>                                       | UUID of the descriptor (see [UUID format](#uuid-format))                                                       |
+| **`options`**        | <code><a href="#timeoutoptions">TimeoutOptions</a></code> | Options for plugin call                                                                                        |
+
+**Returns:** <code>Promise&lt;<a href="#dataview">DataView</a>&gt;</code>
+
+---
+
+### writeDescriptor(...)
+
+```typescript
+writeDescriptor(deviceId: string, service: string, characteristic: string, descriptor: string, value: DataView, options?: TimeoutOptions | undefined) => Promise<void>
+```
+
+Write a value to a descriptor.
+
+| Param                | Type                                                      | Description                                                                                                                                                                                 |
+| -------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`deviceId`**       | <code>string</code>                                       | The ID of the device to use (obtained from [requestDevice](#requestDevice) or [requestLEScan](#requestLEScan))                                                                              |
+| **`service`**        | <code>string</code>                                       | UUID of the service (see [UUID format](#uuid-format))                                                                                                                                       |
+| **`characteristic`** | <code>string</code>                                       | UUID of the characteristic (see [UUID format](#uuid-format))                                                                                                                                |
+| **`descriptor`**     | <code>string</code>                                       | UUID of the descriptor (see [UUID format](#uuid-format))                                                                                                                                    |
+| **`value`**          | <code><a href="#dataview">DataView</a></code>             | The value to write as a <a href="#dataview">DataView</a>. To create a <a href="#dataview">DataView</a> from an array of numbers, there is a helper function, e.g. numbersToDataView([1, 0]) |
+| **`options`**        | <code><a href="#timeoutoptions">TimeoutOptions</a></code> | Options for plugin call                                                                                                                                                                     |
 
 ---
 
@@ -680,7 +832,10 @@ Write a value to a characteristic without waiting for a response.
 startNotifications(deviceId: string, service: string, characteristic: string, callback: (value: DataView) => void) => Promise<void>
 ```
 
-Start listening to changes of the value of a characteristic. For an example, see [usage](#usage).
+Start listening to changes of the value of a characteristic.
+Note that you should only start the notifications once per characteristic in your app and share the data and
+not call `startNotifications` in every component that needs the data.
+For an example, see [usage](#usage).
 
 | Param                | Type                                                              | Description                                                                                                    |
 | -------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -708,6 +863,12 @@ Stop listening to the changes of the value of a characteristic. For an example, 
 ---
 
 ### Interfaces
+
+#### InitializeOptions
+
+| Prop                          | Type                 | Description                                                                                                                                                                                                                                                                                                                                      | Default            |
+| ----------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| **`androidNeverForLocation`** | <code>boolean</code> | If your app doesn't use Bluetooth scan results to derive physical location information, you can strongly assert that your app doesn't derive physical location. (Android only) Requires adding 'neverForLocation' to AndroidManifest.xml https://developer.android.com/guide/topics/connectivity/bluetooth/permissions#assert-never-for-location | <code>false</code> |
 
 #### DisplayStrings
 
@@ -792,6 +953,12 @@ buffer as needed.
 | --------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | **slice** | (begin: number, end?: number \| undefined) =&gt; <a href="#arraybuffer">ArrayBuffer</a> | Returns a section of an <a href="#arraybuffer">ArrayBuffer</a>. |
 
+#### TimeoutOptions
+
+| Prop          | Type                | Description                                                                                                |
+| ------------- | ------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **`timeout`** | <code>number</code> | Timeout in milliseconds for plugin call. Default is 10000 for `connect` and 5000 for other plugin methods. |
+
 #### BleService
 
 | Prop                  | Type                             |
@@ -801,10 +968,11 @@ buffer as needed.
 
 #### BleCharacteristic
 
-| Prop             | Type                                                                                |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| **`uuid`**       | <code>string</code>                                                                 |
-| **`properties`** | <code><a href="#blecharacteristicproperties">BleCharacteristicProperties</a></code> |
+| Prop              | Type                                                                                |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| **`uuid`**        | <code>string</code>                                                                 |
+| **`properties`**  | <code><a href="#blecharacteristicproperties">BleCharacteristicProperties</a></code> |
+| **`descriptors`** | <code>BleDescriptor[]</code>                                                        |
 
 #### BleCharacteristicProperties
 
@@ -823,6 +991,12 @@ buffer as needed.
 | **`notifyEncryptionRequired`**   | <code>boolean</code> |
 | **`indicateEncryptionRequired`** | <code>boolean</code> |
 
+#### BleDescriptor
+
+| Prop       | Type                |
+| ---------- | ------------------- |
+| **`uuid`** | <code>string</code> |
+
 ### Enums
 
 #### ScanMode
@@ -832,6 +1006,14 @@ buffer as needed.
 | **`SCAN_MODE_LOW_POWER`**   | <code>0</code> | Perform Bluetooth LE scan in low power mode. This mode is enforced if the scanning application is not in foreground. https://developer.android.com/reference/android/bluetooth/le/ScanSettings#SCAN_MODE_LOW_POWER                                                        |
 | **`SCAN_MODE_BALANCED`**    | <code>1</code> | Perform Bluetooth LE scan in balanced power mode. (default) Scan results are returned at a rate that provides a good trade-off between scan frequency and power consumption. https://developer.android.com/reference/android/bluetooth/le/ScanSettings#SCAN_MODE_BALANCED |
 | **`SCAN_MODE_LOW_LATENCY`** | <code>2</code> | Scan using highest duty cycle. It's recommended to only use this mode when the application is running in the foreground. https://developer.android.com/reference/android/bluetooth/le/ScanSettings#SCAN_MODE_LOW_LATENCY                                                  |
+
+#### ConnectionPriority
+
+| Members                             | Value          | Description                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`CONNECTION_PRIORITY_BALANCED`**  | <code>0</code> | Use the connection parameters recommended by the Bluetooth SIG. This is the default value if no connection parameter update is requested. https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_BALANCED                                                                                                                                                                     |
+| **`CONNECTION_PRIORITY_HIGH`**      | <code>1</code> | Request a high priority, low latency connection. An application should only request high priority connection parameters to transfer large amounts of data over LE quickly. Once the transfer is complete, the application should request CONNECTION_PRIORITY_BALANCED connection parameters to reduce energy use. https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_HIGH |
+| **`CONNECTION_PRIORITY_LOW_POWER`** | <code>2</code> | Request low power, reduced data rate connection parameters. https://developer.android.com/reference/android/bluetooth/BluetoothGatt#CONNECTION_PRIORITY_LOW_POWER                                                                                                                                                                                                                                                  |
 
 </docgen-api>
 
@@ -870,12 +1052,21 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="https://github.com/pwespi"><img src="https://avatars2.githubusercontent.com/u/24232962?v=4?s=100" width="100px;" alt=""/><br /><sub><b>pwespi</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=pwespi" title="Code">💻</a></td>
-    <td align="center"><a href="https://twitter.com/dennisameling"><img src="https://avatars.githubusercontent.com/u/17739158?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Dennis Ameling</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=dennisameling" title="Code">💻</a></td>
-    <td align="center"><a href="http://squio.nl"><img src="https://avatars.githubusercontent.com/u/169410?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Johannes la Poutre</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=squio" title="Documentation">📖</a> <a href="https://github.com/capacitor-community/bluetooth-le/commits?author=squio" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/sultanmyrza"><img src="https://avatars.githubusercontent.com/u/12681781?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kasymbekov Sultanmyrza</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=sultanmyrza" title="Code">💻</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/pwespi"><img src="https://avatars2.githubusercontent.com/u/24232962?v=4?s=100" width="100px;" alt="pwespi"/><br /><sub><b>pwespi</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=pwespi" title="Code">💻</a> <a href="https://github.com/capacitor-community/bluetooth-le/commits?author=pwespi" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://twitter.com/dennisameling"><img src="https://avatars.githubusercontent.com/u/17739158?v=4?s=100" width="100px;" alt="Dennis Ameling"/><br /><sub><b>Dennis Ameling</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=dennisameling" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://squio.nl"><img src="https://avatars.githubusercontent.com/u/169410?v=4?s=100" width="100px;" alt="Johannes la Poutre"/><br /><sub><b>Johannes la Poutre</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=squio" title="Documentation">📖</a> <a href="https://github.com/capacitor-community/bluetooth-le/commits?author=squio" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/sultanmyrza"><img src="https://avatars.githubusercontent.com/u/12681781?v=4?s=100" width="100px;" alt="Kasymbekov Sultanmyrza"/><br /><sub><b>Kasymbekov Sultanmyrza</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=sultanmyrza" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://sourcya.com"><img src="https://avatars.githubusercontent.com/u/9040320?v=4?s=100" width="100px;" alt="Mutasim Issa"/><br /><sub><b>Mutasim Issa</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=mutasimissa" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.gnucoop.com"><img src="https://avatars.githubusercontent.com/u/1615301?v=4?s=100" width="100px;" alt="Marco Marche"/><br /><sub><b>Marco Marche</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=trik" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/JFKakaJFK"><img src="https://avatars.githubusercontent.com/u/13108477?v=4?s=100" width="100px;" alt="Johannes Koch"/><br /><sub><b>Johannes Koch</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=JFKakaJFK" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/jrobeson"><img src="https://avatars.githubusercontent.com/u/56908?v=4?s=100" width="100px;" alt="Johnny Robeson"/><br /><sub><b>Johnny Robeson</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=jrobeson" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/aadito123"><img src="https://avatars.githubusercontent.com/u/63646058?v=4?s=100" width="100px;" alt="Aadit Olkar"/><br /><sub><b>Aadit Olkar</b></sub></a><br /><a href="https://github.com/capacitor-community/bluetooth-le/commits?author=aadito123" title="Code">💻</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->
